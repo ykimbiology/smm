@@ -1,0 +1,22 @@
+#include <iostream> // example: class constructor
+using namespace std;
+
+class CRectangle {
+    int width, height;
+  public:
+    CRectangle (int,int);
+    int area () {return (width*height);}
+};
+
+CRectangle::CRectangle (int a, int b) {
+  width = a;
+  height = b;
+}
+
+int main () {
+  CRectangle rect (5,11);
+  CRectangle rectb (5,6);
+  cout << "rect area: " << rect.area() << endl;
+  cout << "rectb area: " << rectb.area() << endl;
+  return 0;
+}

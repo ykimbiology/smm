@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SMMPredictOutput xmlns="http://www.mhc-pathway.net/smm" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mhc-pathway.net/smm smm.xsd">
+    <Log success="true" />
+    <Predict ScanLength="4">
+        <Sequence>VIDR</Sequence>
+        <Predictions>1.9092 </Predictions>
+    </Predict>
+    <Predict ScanLength="4">
+        <Sequence>IKLP</Sequence>
+        <Predictions>2.20783 </Predictions>
+    </Predict>
+    <Predict ScanLength="4">
+        <Sequence>QWER</Sequence>
+        <Predictions>1.77514 </Predictions>
+    </Predict>
+    <Predict ScanLength="4">
+        <Sequence>ASDF</Sequence>
+        <Predictions>0.668351 </Predictions>
+    </Predict>
+    <Predict ScanLength="4">
+        <Sequence>VIDRLPSETFPNVHEHINDQKFDDV</Sequence>
+        <Predictions>1.9092 1.83886 1.31116 2.52025 2.67249 3.11347 1.0763 1.99681 2.05945 3.02682 2.23941 2.27146 2.2896 1.73787 2.16912 2.99915 2.4027 2.14167 0.965993 2.00989 1.6707 2.77739 </Predictions>
+    </Predict>
+</SMMPredictOutput>

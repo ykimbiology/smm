@@ -1,0 +1,251 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<title>SMM</title>
+	</head>
+	<body>
+		<h1>SMM</h1>
+		<p>The smm program implements the stabilized matrix method, which generates 
+			quantitative models describing the sequence specificity of biological processe. 
+			In essence, it uses sets of sequences with measured values to generate a tool 
+			predicting experimental outcomes for new sequences. A detailed description is 
+			provided in this <a href="http://www.mhc-pathway.net/smm/SMMManuscript.pdf">manuscript</a>.
+		</p>
+		<p>This file should contain enough information to start using the smm program. 
+			Refer to the <a href="http://www.mhc-pathway.net/smm">smm project homepage</a> for 
+			updates. If you encounter any problems, please write an email to <a href="mailto:smm@mhc-pathway.net">
+				Bjoern Peters</a>, who wrote the program and likes to talk about himself in 
+			the third person.</p>
+		<h2>Contents of this file</h2>
+		<ul>
+			<li>
+				<a href="#Files">Overview of the distributed files</a></li>
+			<li>
+				<a href="#XML">Using the general XML Interface</a></li>
+			<li>
+				<a href="#Command">Using the simplified interface</a></li>
+			<li>
+				<a href="#Source">Compiling the source code</a></li>
+			<li>
+				<a href="#License">License</a></li>
+		</ul>
+		<h2 id="Files">Files</h2>
+		<table cellpadding="4" border="2">
+			<caption>
+				Files contained in the smmwin or smmlinux archives</caption>
+			<tr>
+				<th>
+					Name</th>
+				<th>
+					Description</th>
+				<th>
+					Windows specific<sup>1</sup></th>
+			</tr>
+			<tr>
+				<td>/readme.htm</td>
+				<td>This readme file</td>
+				<td>No</td>
+			</tr>
+			<tr>
+				<td>/smm.exe</td>
+				<td>windows executable</td>
+				<td>Yes</td>
+			</tr>
+			<tr>
+				<td>/smm.xsd</td>
+				<td>schema file for xml input and output</td>
+				<td>No</td>
+			</tr>
+			<tr>
+				<td>/input/</td>
+				<td>examples for input files</td>
+				<td>No</td>
+			</tr>
+			<tr>
+				<td>/output/</td>
+				<td>examples for output files</td>
+				<td>No</td>
+			</tr>
+			<tr>
+				<td>/code/ *.cpp, *.h</td>
+				<td>C++ source code</td>
+				<td>No</td>
+			</tr>
+			<tr>
+				<td>/code/smm.ncb</td>
+				<td>Visual C++ .net project files</td>
+				<td>Yes</td>
+			</tr>
+			<tr>
+				<td>/code/smm.sln</td>
+				<td>Visual C++ .net project files</td>
+				<td>Yes</td>
+			</tr>
+			<tr>
+				<td>/code/smm.vcproj</td>
+				<td>Visual C++ .net project files</td>
+				<td>Yes</td>
+			</tr>
+			<tr>
+				<td>/code/Makefile</td>
+				<td>Makefile, tested for g++ 1.5 and higher</td>
+				<td>No</td>
+			</tr>
+		</table>
+		<p><sup>1</sup> Windows specific files are only contained in the smmwin archive</p>
+		<h2 id="XML">The XML interface</h2>
+		<p>
+			This interface provides the most general and flexible way for using the smm 
+			programm, as it allows to modify all internal parameters. This comes at a 
+			price: the content of the input files may seem complicated, especially for 
+			first time XML users. Therefore, a complementary interface designed for the 
+			most common applications is also provided and described <a href="#Command">below</a>.
+		</p>
+		<p>For the XML interface, the general calling convention is
+		</p>
+		<p><pre>smm.exe [XMLFileName]</pre>
+		<p>The specified file has to contain XML data from which the smm program extracts 
+			all input parameters. In the examples below, it is assumed that the input files 
+			are in the same directory as smm.exe. If this is not the case, path information 
+			has to be added to the input file names.</p>
+		<h3>Training</h3>
+		<p>The "input" directory contains three files with sample xml training data:
+		</p>
+		<ul>
+			<li>
+				TrainInput1.xml - contains peptides of length 4 with associated measurements
+			</li>
+			<li>
+				TrainInput2.xml - contains peptides and a scoring matrix derived from a 
+				combinatorial peptide library</li>
+			<li>
+				TrainInput3.xml - contains peptides and a scoring matrix and specifies how the 
+				smm method should calculate the prediction tool</li>
+		</ul>
+		<p>
+			To run the examples, call the smm.exe file from the command line and give the 
+			name of the input file as a parameter, e.g.:
+		</p>
+		<p>
+			<pre>smm.exe TrainInput1.xml</pre>
+		</p>
+		<p>Note that the training process for the example files will take about one minute 
+			on a 2 Ghz Pentium 4 PC, and no output is generated before the end of that 
+			process.</p>
+		<p>In the first two examples, the smm method decides how to calculate the 
+			prediction tool on the basis of the training set size. As enough training data 
+			is present, a scoring matrix and pair coefficients are calculated. In the third 
+			example, the &lt;MatrixCalculation&gt; element at the end of the input file 
+			defines that no pair coefficients will be calculated (as no 
+			&lt;PairCalculation&gt; element is present). The 
+			&lt;AdjustOffsetToSequenceData&gt; element specifies that the offset of the 
+			scoring matrix is adjusted to the peptide data, which is recommended if both 
+			come from different experimental settings.
+		</p>
+		<h3>Prediction</h3>
+		<p>The three above examples generate output files at the location specified in the 
+			TrainInput files. Each output file has a &lt;SMMPredictor&gt; element 
+			containing a scoring matrix and (in the first two examples) pair coefficients. 
+			To make a prediction, an &lt;SMMPredictor&gt; element along with sequences for 
+			which predictions are to be made are passed to the smm.exe file. An example is 
+			given in the PredictInput.xml file. To make a prediction, call
+		</p>
+		<pre>smm.exe PredictInput.xml</pre>
+		<h3 id="Output">Example output</h3>
+		<p>For all the training and prediction examples mentioned in the previous section, 
+			the output files that should be generated are contained in the /output/ 
+			directory. The exact coefficient values in the output files can vary between 
+			systems, if their random number generator implementations (used during 
+			cross-validation) differ.</p>
+		<h3 id="Schema">XML Schema</h3>
+		<p>
+			The smm.xsd file contains an xml schema defining what elements are allowed in 
+			the training and prediction input files. Each element is annotated, to document 
+			its intended use.</p>
+		<p>
+			The smm.exe program expects the input files to be valid according to this 
+			schema. If an undefined error occurs when running smm.exe, first make sure that 
+			the input files validate against the schema. This is easy to do with freely 
+			available software such as <a href="http://www.xmlspy.com/">xmlspy</a>, which 
+			also comes with a nice schema viewer.
+		</p>
+		<h2 id="Command">Using the simplified interface</h2>
+		<p>This is a limited interface, designed to provide easy access to the most common 
+			SMM applications. It can only handle amino acid sequence data, and always uses 
+			default parameters during the training process. By avoiding the use of XML, it 
+			should be easy for any user to construct their own input files.</p>
+		<p>
+			Following is a list of examples using this interface. They assume that the input files are in the same directory as smm.exe. If this 
+			is not the case, path information has to be added to the input file names.</p>
+		<h3>Generate a scoring matrix</h3>
+		<p>Enter at the command line:
+		</p>
+		<p><pre>smm.exe -tm TrainInput1.txt</pre>
+		</p>
+		<p>The newly generated scoring matrix will in this case be saved as 
+			'mat-TrainInput1.txt'. To save it under a different file name, e.g. 'mymatrix', 
+			add a second file name:</p>
+		<p><pre>smm.exe -tm TrainInput1.txt mymatrix</pre>
+		</p>
+		<p>Choosing such a user defined filename for the output is always possible, but is 
+			not repeated explicitly in the examples below.
+		</p>
+		<h3>Generate a scoring matrix and pair coefficients</h3>
+		<p><pre>smm.exe -tp TrainInput1.txt</pre>
+		</p>
+		<p>or</p>
+		<p><pre>smm.exe -t TrainInput1.txt</pre>
+		</p>
+		<p>The lower option only generates pair coefficients if the number of data points 
+			in the training input is sufficient.</p>
+		<h3>Make a prediction</h3>
+		<p><pre>smm.exe -p mat-TrainInput1.txt sequences.txt</pre>
+		</p>
+		<p>The first file specified has to contain a previously generated matrix with or 
+			without pair coefficients. The second file contains the sequences for which a 
+			prediction is supposed to be made. The output is saved as 'pred-sequences.txt'.</p>
+		<h2 id="Source">Compiling the source code</h2>
+		<p>The source code has been compiled and tested in Visual C++.Net on Windows XP, 
+			and using g++ on Debian and Suse Linux distributions. In each case, the <a href="http://sources.redhat.com/gsl/">
+				Gnu Scientific Library (GSL)</a> has to be installed first. A <a href="http://gnuwin32.sourceforge.net/packages/gsl.htm">
+				GSL version for windows is available here</a>. The only other non-standard 
+			library used is <a href="http://sourceforge.net/projects/tinyxml/">TinyXml</a>, 
+			which is included in the source code.</p>
+		<p>The easiest way to compile under windows is to use the supplied Visual C++ 
+			project files. They assume a standard installation of the GSL libray at 
+			C:\Program Files\GnuWin32.
+		</p>
+		<p>To compile using g++, use the supplied Makefile. g++ has to be at least version 
+			1.5 or higher.
+		</p>
+		<h2 id="License">License Issues</h2>
+		<p>The smm code itself is released under the <a href="http://www.gzip.org/zlib/zlib_license.html">
+				zlib license</a>, which is repeated below. Note that if you want to use 
+			parts of the smm code relying on the GSL library, its <a href="http://www.gnu.org/copyleft/gpl.html">
+				GNU GPL license</a> applies, which is somewhat restrictive regarding 
+			commercial use.
+		</p>
+		<h3>License for smm code (zlib)</h3>
+		<p>
+			This software is provided 'as-is', without any express or implied warranty. In 
+			no event will the authors be held liable for any damages arising from the use 
+			of this software. Permission is granted to anyone to use this software for any 
+			purpose, including commercial applications, and to alter it and redistribute it 
+			freely, subject to the following restrictions:
+		</p>
+		<ol>
+			<li>
+				The origin of this software must not be misrepresented; you must not claim that 
+				you wrote the original software. If you use this software in a product, an 
+				acknowledgment in the product documentation would be appreciated but is not 
+				required.
+			</li>
+			<li>
+				Altered source versions must be plainly marked as such, and must not be 
+				misrepresented as being the original software.
+			</li>
+			<li>
+				This notice may not be removed or altered from any source distribution.</li>
+		</ol>
+	</body>
+</html>

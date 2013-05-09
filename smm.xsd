@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2005 U (http://www.xmlspy.com) by Bjoern Peters (student) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.mhc-pathway.net/smm" targetNamespace="http://www.mhc-pathway.net/smm" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="SMMTrainInput">
+		<xs:annotation>
+			<xs:documentation>Contains the parameters and training information needed  to start the SMM program</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="OutputFile"/>
+				<xs:element name="TrainingData">
+					<xs:annotation>
+						<xs:documentation>Contains the experimental data used for training.</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Alphabet" type="xs:string">
+								<xs:annotation>
+									<xs:documentation>The alphabet specifies the allowed characters in 'Sequence'. It is case sensitive, and any non-whitespace characters should be accepted. </xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="SequenceLength" type="xs:positiveInteger">
+								<xs:annotation>
+									<xs:documentation>Specified the length in characters of each 'Sequence' </xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="SequenceData">
+								<xs:annotation>
+									<xs:documentation>Contains sequences and associated measurements</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="DataPoint" maxOccurs="unbounded">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="Sequence" type="xs:string">
+														<xs:annotation>
+															<xs:documentation>Each character in Sequence has to be present in Alphabet. The number of characters has to correspond to SequenceLength</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="Threshold" minOccurs="0">
+														<xs:annotation>
+															<xs:documentation>Should be specified if the Measured value is at the border of experimental resolution. </xs:documentation>
+														</xs:annotation>
+														<xs:complexType>
+															<xs:choice>
+																<xs:element name="Greater"/>
+																<xs:element name="Lesser"/>
+															</xs:choice>
+														</xs:complexType>
+													</xs:element>
+													<xs:element name="Measured" type="xs:double">
+														<xs:annotation>
+															<xs:documentation>The quantified measurement associated with Sequence</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element ref="SeqMatrix" minOccurs="0"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="MatrixCalculation" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Contains optional parameters for the SMM matrix calculation. If not specified, the SMM program will decide based on the amount of training data what parameters will be used. (including for PairCalculation)</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="UseExternalMatrix" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>If this is not specified, the External Matrix in Training data will be ignored. </xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:choice minOccurs="0">
+										<xs:element name="AdjustToSequenceData">
+											<xs:annotation>
+												<xs:documentation>Performs a linear regression to adjust the External Matrix to the Sequence data. Use this if experimental sources for SequenceData and ExternalMatrix could be explained by a linear transformation</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="AdjustOffsetToSequenceData">
+											<xs:annotation>
+												<xs:documentation>Adjusts the Offset of the ExternalMatrix to optimally reproduce sequence data. Use this if experimental differences between ExternalMatrix and SequenceData could result in a constant absolute difference</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:choice>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="SMMMatrix" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Specify this to calculate an SMM Matrix from the Training Data. If this is not specified but UseExternalMatrix is, only the ExternalMatrix will be used.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="LambdaGrouping" minOccurs="0">
+											<xs:annotation>
+												<xs:documentation>Specifies if an Individual lambda value will be used for each matrix value, or matrix values will share one lambda value for each Position in a sequence, or if there will only be One lambda value for all matrix values.</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:choice>
+													<xs:element name="Individual"/>
+													<xs:element name="Position"/>
+													<xs:element name="One"/>
+												</xs:choice>
+											</xs:complexType>
+										</xs:element>
+										<xs:element ref="SMMParameters" minOccurs="0"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="PairCalculation" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Contains optional parameters for the SMM pair coefficient calculation. If specified, MatrixCalculation has to be specified as well. </xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:all minOccurs="0">
+							<xs:element name="IndividualLambdas" type="xs:boolean" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Specifies if an individual lambda value is used for each pair coefficients or if one lambda value applies to all.</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="PairCoefCriteria" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Specifies the criteria which PairCoefficients have to meet. All other PairCoefs will implicitly be set to zero.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="MinCount">
+											<xs:annotation>
+												<xs:documentation>The minimum number of Sequences that have to be present in the training set containing a Pair Coefficient. </xs:documentation>
+											</xs:annotation>
+											<xs:simpleType>
+												<xs:restriction base="xs:positiveInteger">
+													<xs:minInclusive value="1"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+										<xs:element name="MaxDisagrement">
+											<xs:annotation>
+												<xs:documentation>This parameter is used to discard Pair coefficients for which it is unlikely to find a significant impact. It specifies the maximum percentage of sequences which do not agree with the majority as to if the presence of the pair is a positive or a negative influence on the measured value compared to the sum of individual influences.</xs:documentation>
+											</xs:annotation>
+											<xs:simpleType>
+												<xs:restriction base="xs:double">
+													<xs:minInclusive value="0"/>
+													<xs:maxInclusive value="0.5"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element ref="SMMParameters" minOccurs="0"/>
+						</xs:all>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SMMTrainOutput">
+		<xs:annotation>
+			<xs:documentation>Contains the output generated by the SMM program. Output can be used to predict "measurement" values for sequences. </xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Log"/>
+				<xs:element ref="SMMPredictor" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SMMParameters">
+		<xs:annotation>
+			<xs:documentation>Parameters used by the core SMM algorithm </xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:all>
+				<xs:element name="Repeats" minOccurs="0">
+					<xs:complexType>
+						<xs:all>
+							<xs:element name="Bagging">
+								<xs:annotation>
+									<xs:documentation>Number of times training is repeated. The final predictor (matrix or pair) is the average of all repeats. </xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:integer">
+										<xs:minInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="CrossValidation">
+								<xs:annotation>
+									<xs:documentation>Number of subsets the TrainingData is split into. This is used to calculate the cross validated distance of prediction to measurements, which is used to optimize the lambda value. </xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:positiveInteger">
+										<xs:minInclusive value="2"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+						</xs:all>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="LambdaRange" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Min and Max specify the allowed range of lambda values. Start is the starting point used, and should be at the high end of expected values. Increasing the Min value will speed up convergence as measured by the L2* norm, but will also suppress the detection of 'small' influences. </xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:all>
+							<xs:element name="Min">
+								<xs:simpleType>
+									<xs:restriction base="xs:double">
+										<xs:minInclusive value="0"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="Start">
+								<xs:simpleType>
+									<xs:restriction base="xs:double">
+										<xs:minInclusive value="0"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="Max">
+								<xs:simpleType>
+									<xs:restriction base="xs:double">
+										<xs:minInclusive value="0"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+						</xs:all>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Precission" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Specifies the precision to which the optimal solution should be determined. </xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:double">
+							<xs:minInclusive value="0"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="LogDetail" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>The amount of Log data generated during training. The Log data will be given in the SMMTrainOutput if an error occurs during training or if the LogDetail is Medium or Above. </xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:choice>
+							<xs:element name="None"/>
+							<xs:element name="Minimal"/>
+							<xs:element name="Medium"/>
+							<xs:element name="Detailed"/>
+							<xs:element name="All"/>
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="SeedRandomizer" type="xs:positiveInteger" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Unless a value is specified here, the Random Number generator will be initialized with (1) at the start of training. This makes error tracking easier. Random numbers are affecting the split into CrossValidation subsets</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="MaxNormIterations" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>The maximum number of iterations for convergence according to the L2* norm. If this number is reached, a "non-convergence" exception is thrown. Increase this number or alternatively LambdaMin if this causes a problem, and you are sure your Training data is well formed.</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:positiveInteger">
+							<xs:minInclusive value="1"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SMMPredictor">
+		<xs:annotation>
+			<xs:documentation>Contains the data needed to make predictions for any sequence specified by Alphabet and SequenceLength</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Alphabet" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Specifies the letters allowed in sequences for which predictions can be made. </xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="SequenceLength" type="xs:positiveInteger">
+					<xs:annotation>
+						<xs:documentation>Specifies the length of sequences for which predictions can be made</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="SeqMatrix" minOccurs="0"/>
+				<xs:element name="SeqPair" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Measure the influence of a pair of Letters in the sequence that deviates from the sum of their individual influences</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="PairCoef" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Letter1">
+											<xs:simpleType>
+												<xs:restriction base="xs:string">
+													<xs:length value="1"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+										<xs:element name="Position1">
+											<xs:simpleType>
+												<xs:restriction base="xs:positiveInteger">
+													<xs:minInclusive value="1"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+										<xs:element name="Letter2">
+											<xs:simpleType>
+												<xs:restriction base="xs:string">
+													<xs:length value="1"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+										<xs:element name="Position2">
+											<xs:simpleType>
+												<xs:restriction base="xs:positiveInteger">
+													<xs:minInclusive value="1"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+										<xs:element name="Value" type="xs:double"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SMMPredictInput">
+		<xs:annotation>
+			<xs:documentation>Contains Sequences for which predictions will be made with SMMPredictor, as generated in SMMTrainOutput</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="OutputFile"/>
+				<xs:element ref="SMMPredictor"/>
+				<xs:element name="Predict" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Sequence" type="xs:string">
+								<xs:annotation>
+									<xs:documentation>Sequence can be of any length, and will be scanned for fragments of SequenceLength specified in SMMPredictor</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SMMPredictOutput">
+		<xs:annotation>
+			<xs:documentation>Contains Sequences with their associated predictions </xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Log"/>
+				<xs:element name="Predict" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Sequence" type="xs:string"/>
+							<xs:element name="Predictions">
+								<xs:annotation>
+									<xs:documentation>If Sequence is longer than ScanLength, a list of predictions is generated which corresponds to sequence fragments (1 - ScanLength), (2 - ScanLength+1), ...</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:list itemType="xs:double"/>
+								</xs:simpleType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="ScanLength" type="xs:positiveInteger">
+							<xs:annotation>
+								<xs:documentation>Fragment length used to scan Sequence with.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SeqMatrix">
+		<xs:annotation>
+			<xs:documentation>Measures the influence of each Letter of the Alphabet at each position in Sequence.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Offset" type="xs:double"/>
+				<xs:element name="MatCoef" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Letter">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:length value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="Position">
+								<xs:simpleType>
+									<xs:restriction base="xs:positiveInteger">
+										<xs:minInclusive value="1"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="Value" type="xs:double"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Log">
+		<xs:annotation>
+			<xs:documentation>If success=false, ErrorMessage will contain a string describing the Error, and LogText will contain any output generated during calculation. The content of all other elements is not defined.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:all minOccurs="0">
+				<xs:element name="LogText" type="xs:string" minOccurs="0"/>
+				<xs:element name="ErrorMessage" type="xs:string" minOccurs="0"/>
+			</xs:all>
+			<xs:attribute name="success" type="xs:boolean"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="OutputFile" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>Specifies the file name the output will be saved to</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+</xs:schema>
