@@ -6,7 +6,7 @@ OBJECTS = BPException.o BPMath.o Dataset.o Letter.o MinimizerBase.o NumVec.o SMM
 
 
 $(EXECUTABLE) :  $(OBJECTS) 
-	$(COMPILER) $(FLAGS) -o $(EXECUTABLE) $(OBJECTS) /usr/local/boost_1_52_0/stage/lib/libboost_program_options.a
+	$(COMPILER) $(FLAGS) -o $(EXECUTABLE) $(OBJECTS) /usr/local/boost_1_53_0/stage/lib/libboost_program_options.a
 
 %.o : %.cpp 
 	$(COMPILER) -o $*.o -c $*.cpp 
