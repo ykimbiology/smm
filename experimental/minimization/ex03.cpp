@@ -40,6 +40,7 @@ mat get_model_ref(int n)
 void get_measured(mat &model, int n)
 {
     //
+	cout << "inside get_m " << model << endl;
 	for (int i=0; i<n; i++)
 	{
         cout << "loop " << i << endl;

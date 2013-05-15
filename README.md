@@ -18,6 +18,6 @@ BMC Bioinformatics. 2009
 http://www.ncbi.nlm.nih.gov/pubmed/19948066
 
 
-Peters B, Sette a. Generating quantitative models describing the sequence specificity of biological processes with the stabilized matrix method.
+Peters B, Sette A. Generating quantitative models describing the sequence specificity of biological processes with the stabilized matrix method.
 BMC Bioinformatics. 2005
 http://www.ncbi.nlm.nih.gov/pubmed/15927070
