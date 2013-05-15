@@ -1,5 +1,5 @@
 COMPILER = g++ 
-FLAGS = -lgsl -lgslcblas -lm 
+FLAGS = -lgsl -lgslcblas -lm  
 EXECUTABLE = smm
 
 OBJECTS = BPException.o BPMath.o Dataset.o Letter.o MinimizerBase.o NumVec.o SMMCrossValidate.o SMMOptimizeLambda.o SMMRepeater.o SMMSeqMatrix.o SMMSeqPair.o SMMSet.o SMMSolve.o SeqMatrix.o SeqPair.o SeqSet.o VSet.o stdafx.o tinystr.o tinyxml.o tinyxmlerror.o tinyxmlparser.o smm.o

@@ -33,6 +33,8 @@ distribution.
 #include "SMMSeqPair.h"
 #include "tinyxml.h"
 
+using namespace std;
+
 //Used by CommandLineInterfaceBoost
 using namespace boost;
 namespace po = boost::program_options;
@@ -284,13 +286,14 @@ string AutoFileName(const string & original, const string &prefix)
 //		throw BPException(string("Unknown command line parameter '"+command+"'"));
 //}
 
-void CommandLineInterfaceBoost(int ac, char* av[])
+//void CommandLineInterfaceBoost(int ac, char* av[])
+int CommandLineInterfaceBoost(int ac, char* av[])
 {
 	// This version uses the Boost c++ library to implement a commandline interface.
 
 	CLetter::Init("ACDEFGHIKLMNPQRSTVWY");	// Assume peptide sequences as input
     try {
-        std::string fname_input;
+        string fname_input;
         std::string fname_output;
         std::string fname_matrix;
         int min_count_data;
@@ -298,10 +301,13 @@ void CommandLineInterfaceBoost(int ac, char* av[])
         po::options_description desc("Allowed options");
         desc.add_options()
             ("help,h", "produce help message")
+            ("train,t", "Train:")
+            ("predict,p", "Predict:")
+
             ("input,i",  po::value<std::string>(&fname_input),
-                "Input file name")
+                "Train: A file containing binding affinity measurement data.\nPredict: A file containing a list of peptides.")
             ("output,o", po::value<std::string>(&fname_output),
-                "Output file name")
+                "Train: A file containing a position specific scoring matrix.\nPredict: A file containing predicted affinities.")
             ("paircoef,n", po::value<int>(&min_count_data),
                 "Train pair-coefficients (Specify minimum number of data points to require.)")
             ("matrix,m", po::value<std::string>(&fname_matrix),
@@ -314,75 +320,72 @@ void CommandLineInterfaceBoost(int ac, char* av[])
         po::notify(vm);
 
         if (vm.count("help")) {
-            std::cout << "Usage: ./smm [options]\n";
+        	std::cout << "help option."; //DEBUG
+        	std::cout << "Usage: ./smm [options]\n";
             std::cout << desc;
             //return 0;
         }
 
-        if (vm.count("input"))
+        if (vm.count("train"))
         {
-            std::cout << "Input: " << vm["input"].as<std::string>() << "\n";
-        }
+	        // Training: scoring matrix
+	        if (vm.count("input") && (!vm.count("matrix")) && (!vm.count("paircoef")))
+	        {
+	        	cout << "file input name "<< fname_input <<endl;
 
-        if (vm.count("output"))
-        {
-            std::cout << "Output: " << vm["output"].as<std::string>() << "\n";
-        }
+	        	std::cout << "Train a scoring matrix." << std::endl;
+	    		//const string in_file_name=argv[2];
+	    		CSeqSet set;
+	    		set.Load(fname_input);
 
-        if (vm.count("paircoef"))
-        {
-            std::cout << "Paircoef: " << vm["paircoef"].as<int>() << "\n";
-        }
+				CSMMSeqMatrix mat;
+				mat.TrainMatrix(set);
+				if (vm.count("output")) {
+					mat.Save(fname_output);
+				} else {
+					mat.Save(AutoFileName(fname_input,"mat"));
+				}
+	        }
 
-        if (vm.count("matrix"))
-        {
-            std::cout << "Matrix: " << vm["matrix"].as<std::string>() << "\n";
-        }
+	        // Training: scoring matrix + paircoefs
+	        if (vm.count("input") && (!vm.count("matrix")) && (vm.count("paircoef")))
+	        {
+	        	std::cout << "Train a scoring matrix + paircoefs." << "-n " << min_count_data << std::endl;
+
+	    		CSeqSet set;
+	    		set.Load(fname_input);
+
+				CSMMSeqMatrix mat;
+				mat.TrainMatrix(set);
+
+				CSMMSeqPair pair(min_count_data);
+				pair.CSeqMatrix::operator=(mat);
+				pair.TrainPair(set);
+				if (vm.count("output")) {
+					pair.Save(fname_output);
+				} else {
+					pair.Save(AutoFileName(fname_input,"pair"));
+				}
+	        }
 
 
-
-        // Training: scoring matrix
-        if (vm.count("input") && (!vm.count("matrix")) && (!vm.count("paircoef")))
-        {
-        	std::cout << "Train a scoring matrix." << std::endl;
-    		//const string in_file_name=argv[2];
-    		CSeqSet set;
-    		set.Load(fname_input);
-
-			CSMMSeqMatrix mat;
-			mat.TrainMatrix(set);
-			if (vm.count("output")) {
-				mat.Save(fname_output);
-			} else {
-				mat.Save(AutoFileName(fname_input,"mat"));
+        } else if (vm.count("predict")) {
+			if (vm.count("matrix") && (vm.count("input")))
+			{
+				std::cout << "Predict a scoring matrix." << std::endl;
+				std::cout << "matrix " <<  vm["matrix"].as<std::string>() << std::endl;
+				std::cout << "input " <<  vm["input"].as<std::string>() << std::endl;
 			}
-        }
 
-        // Training: scoring matrix + paircoefs
-        if (vm.count("input") && (!vm.count("matrix")) && (vm.count("paircoef")))
-        {
-        	std::cout << "Train a scoring matrix + paircoefs." << "-n " << min_count_data << std::endl;
-
-    		CSeqSet set;
-    		set.Load(fname_input);
-
-			CSMMSeqMatrix mat;
-			mat.TrainMatrix(set);
-
-			CSMMSeqPair pair(min_count_data);
-			pair.CSeqMatrix::operator=(mat);
-			pair.TrainPair(set);
-			if (vm.count("output")) {
-				pair.Save(fname_output);
-			} else {
-				pair.Save(AutoFileName(fname_input,"pair"));
-			}
-        }
-
-        // Prediction:
-        if (vm.count("input") && (vm.count("matrix")))
-        {
-            std::cout << "Predict binding affinities, using the provided scoring matrix." << std::endl;
+        } else {
+        	// Same as help option:
+        	std::cout <<"else\n";
+            std::cout << "Usage: ./smm [options]\n";
+            std::cout << desc;
+            //return 0; //Does not work.
+            //exit(0);  //Does not work.
+            //return(0);
+            //throw 20;
         }
 
     }
@@ -427,6 +430,8 @@ int main(int argc, char* argv[])
 			//cout << endl << "Starting...";
 			cout.flush();
 			CommandLineInterfaceBoost(argc,argv);
+			return(0);
+
 			//cout << endl << "Executed successfully" << endl;
 
 
