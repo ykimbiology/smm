@@ -169,10 +169,6 @@ int main(int argc, char* argv[])
 
 
 
-
-	//opt.set_min_objective(myfunc, NULL);
-
-
 	FunctionData f_data;
 	f_data.set_values(A, yobs);
 	opt.set_min_objective(myfunc, &f_data);

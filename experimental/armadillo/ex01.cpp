@@ -18,5 +18,9 @@ int main(int argc, char** argv)
   cout << A*B.t() << endl;
   cout << A - B << endl;
 
+  // Multipling a scalar to a matrix.
+  mat C = -1.0*B;
+  C.print();
+
   return 0;
   }
