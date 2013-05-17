@@ -9,10 +9,18 @@ using namespace std;
 using namespace arma;
 
 //#define WPAIR 0.0  // Minimization was successful.
-#define WPAIR 0.05
+//#define WPAIR 1.0
+//#define WPAIR 0.01
+#define WPAIR 0.1
 
 /**
- *This version minimizes a function that includes pair terms.
+ * This version tries global minimization.
+ *
+ * http://permalink.gmane.org/gmane.science.analysis.nlopt.general/153
+ *
+ * ToDo:
+ * 1) Update design matrix generation so that for each bin of 10 elements, only 1 has '1' and rest '0's.
+ *    This may make the minimizing function easier?
  *
  * GOALS:
  * 1) Use both armadillo lib and nlopt to minimize a complex function.
@@ -39,7 +47,7 @@ using namespace arma;
  * 1) Confirmed that non-derivative algorithm works on the model with pair terms.
  *
  * compile:
- * g++ ex05.cpp -o ex05 -lnlopt -lm -O1 -larmadillo
+ * g++ ex06.cpp -o ex06 -lnlopt -lm -O1 -larmadillo
  */
 
 typedef std::vector<double> stdvec;
@@ -82,7 +90,7 @@ mat get_design_matrix(mat &model, int n, int p)
 	mat A = randu<mat>(n,p); // A random matrix of (n,p) dimensions.
 	for (int i=0; i<n; i++) {
 		for (int j=0; j<p; j++) {
-            if (A(i,j) < 0.5) {
+            if (A(i,j) < 0.9) {
             	A(i,j) = 0.0;
             } else {
             	A(i,j) = 1.0;
@@ -219,9 +227,34 @@ int main(int argc, char* argv[])
 //	int N = 10;  // Number of samples;
 //	int p = 2;  // Number of features.
 
+
+	//nlopt::opt opt(nlopt::GN_DIRECT_L, p);  // Global minimization:
+	//nlopt::opt opt(nlopt::GN_ISRES, p);  // Global minimization:
+	//nlopt::opt opt(nlopt::G_MLSL_LDS, p);  // Global minimization:
+	//nlopt::opt opt(nlopt::GN_CRS2_LM, p);  // Global minimization:
+
+
+
+	//nlopt::opt local_opt(nlopt::LD_LBFGS, p);
+	//opt.set_local_optimizer(local_opt);
+
 	nlopt::opt opt(nlopt::LD_LBFGS, p);       // requires gradient. Works reallly well; much better than MMA.
 	//nlopt::opt opt(nlopt::LD_MMA, p);       // requires gradient.
 	//nlopt::opt opt(nlopt::LN_NELDERMEAD, p);  // Does not require gradient.
+
+	// Set lower and upper bounds;
+	std::vector<double> lb(p);
+	std::vector<double> ub(p);
+	mat mlb = randu<mat>(p,1);
+	mat mub = randu<mat>(p,1);
+    mlb.fill(-5.0);
+    mub.fill(5.0);
+    lb = conv_to< stdvec >::from(mlb);
+    ub = conv_to< stdvec >::from(mub);
+	opt.set_lower_bounds(lb);
+	opt.set_upper_bounds(ub);
+
+
 
 	mat model_ref = randu<mat>(p,1);
 	model_ref = get_model_ref(p);
